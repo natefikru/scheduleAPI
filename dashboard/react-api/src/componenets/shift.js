@@ -31,6 +31,7 @@ export default class Shift extends React.Component {
         }
     };
 
+
     render() {
         return (
             <div>
