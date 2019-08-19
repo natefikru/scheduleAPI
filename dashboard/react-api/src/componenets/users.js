@@ -1,6 +1,7 @@
 import React from 'react'
 import CreateUserModal from "./modals/createUser";
 import Modal from 'react-bootstrap/Modal'
+import { Route, Link, BrowserRouter as Router, Switch } from 'react-router-dom'
 
 
 export default class Users extends React.Component {
@@ -20,6 +21,10 @@ export default class Users extends React.Component {
 
     hideCreateUserModal = () => {
         this.setState({ show: false });
+    };
+
+    showUser = (userId) => {
+        this.router.transitionTo(`/users/${userId}`)
     };
 
 
@@ -45,12 +50,13 @@ export default class Users extends React.Component {
                     </thead>
                     <tbody>
                     {this.state.users.map((user) => (
-                        <tr key={user.id} onClick={()=>this.props.showUser(user.id)}>
-                            <th scope="row">{user.id}</th>
-                            <td>{user.first_name} {user.last_name}</td>
-                            <td>{user.email}</td>
-                            <td>{user.is_manager.toString()}</td>
-                        </tr>
+                            <tr key={user.id} >
+                                <th scope="row">{user.id}</th>
+
+                                <td><Link to={`/users/${user.id}`}>{user.first_name} {user.last_name}</Link></td>
+                                <td>{user.email}</td>
+                                <td>{user.is_manager.toString()}</td>
+                            </tr>
                     ))}
                     </tbody>
                 </table>

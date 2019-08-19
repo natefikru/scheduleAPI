@@ -1,5 +1,5 @@
 import json
-from flask import request
+from flask import request, Response
 from sqlalchemy import and_
 from models import User, Shift, app, database_file
 import sqlite_helper as sh
@@ -31,11 +31,50 @@ def create_user():
         is_manager = request_body['is_manager']
     if request_body.get('email'):
         email = request_body.get('email')
-    user = User(first_name=first_name, last_name=last_name, is_manager=is_manager, email=email)
-    session.add(user)
-    session.commit()
-    session.close()
-    return json.dumps({'message': "User Created"})
+
+    if not first_name or not last_name or not email:
+        session.close()
+        resp = Response(json.dumps({'error': 'received partial data'}), status=400, mimetype='application/json')
+    else:
+        user = User(first_name=first_name, last_name=last_name, is_manager=is_manager, email=email)
+        session.add(user)
+        session.commit()
+        session.close()
+        resp = Response(json.dumps({'message': "User Created"}), status=200, mimetype='application/json')
+    return resp
+
+@app.route("/user/<int:user_id>", methods=["PUT"])
+def edit_user(user_id):
+    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    request_body = request.get_json()
+    first_name = ""
+    last_name = ""
+    email = ""
+    is_manager = False
+    if request_body.get('first_name'):
+        first_name = request_body['first_name']
+    if request_body.get('last_name'):
+        last_name = request_body['last_name']
+    if request_body.get('is_manager'):
+        is_manager = request_body['is_manager']
+    if request_body.get('email'):
+        email = request_body.get('email')
+
+    if not first_name or not last_name or not email:
+        session.close()
+        resp = Response(json.dumps({'error': 'received partial data'}), status=400, mimetype='application/json')
+    else:
+        user = session.query(User).filter(
+            User.id == user_id
+        ).first()
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email
+        user.is_manager = is_manager
+        session.commit()
+        session.close()
+        resp = Response(json.dumps({'message': "User Created"}), status=200, mimetype='application/json')
+    return resp
 
 
 @app.route('/users', methods=["GET"])
@@ -55,9 +94,8 @@ def get_users():
                 "is_manager": user_object.is_manager
             }
             user_list.append(return_object)
-        return json.dumps(user_list)
-    else:
-        return json.dumps({'message': 'No Users were found'})
+    resp = Response(json.dumps(user_list), status=200, mimetype='application/json')
+    return resp
 
 
 @app.route('/user/<int:user_id>', methods=["GET"])
@@ -75,9 +113,10 @@ def get_user(user_id):
             "email": user.email,
             "is_manager": user.is_manager
         }
-        return json.dumps(return_object)
+        resp = Response(json.dumps(return_object), status=200, mimetype='application/json')
     else:
-        return json.dumps({'error': "User ID does not exist"})
+        return Response(json.dumps({'error': "User ID does not exist"}), status=400, mimetype='application/json')
+    return resp
 
 
 @app.route('/user/<int:user_id>/shifts', methods=["GET"])
@@ -98,10 +137,11 @@ def get_user_shifts(user_id):
                 }
                 user_shift_list.append(shift)
             session.close()
-            return json.dumps(user_shift_list)
+        resp = Response(json.dumps(user_shift_list), status=200, mimetype='application/json')
     else:
         session.close()
-        return json.dumps({'error': "User ID does not exist"})
+        resp = Response(json.dumps({'error': "User ID does not exist"}), status=400, mimetype='application/json')
+    return resp
 
 
 @app.route('/user/<int:user_id>', methods=["DELETE"])
@@ -114,10 +154,11 @@ def delete_user(user_id):
         session.delete(user)
         session.commit()
         session.close()
-        return json.dumps({'message': 'User Deleted'})
+        resp = Response(json.dumps({'message': 'User Deleted'}), status=200, mimetype='application/json')
     else:
         session.close()
-        return json.dumps({'error': "User does not exist"})
+        resp = Response(json.dumps({'error': "User does not exist"}), status=400, mimetype='application/json')
+    return resp
 
 
 @app.route("/shift", methods=["POST"])
@@ -127,21 +168,92 @@ def create_shift():
     user_id = None
     start_time = None
     end_time = None
+
     if request_body.get('user_id'):
         user_id = request_body['user_id']
     if request_body.get('start_time'):
         start_time = request_body['start_time']
     if request_body.get('end_time'):
         end_time = request_body['end_time']
+
+    user = session.query(User).filter(
+        User.id == user_id
+    ).first()
+
     shift = Shift(user_id=user_id, start_time=start_time, end_time=end_time)
+    for user_shift in user.shifts:
+        if start_time >= user_shift.start_time and start_time <= user_shift.end_time:
+            session.close()
+            resp = Response(json.dumps({'error': 'Start Time overlaps with existing shift'}),
+                            status=400, mimetype='application/json')
+            return resp
+        elif end_time >= user_shift.start_time and end_time <= user_shift.end_time:
+            session.close()
+            resp = Response(json.dumps({'error': 'End Time overlaps with existing shift'}),
+                            status=400, mimetype='application/json')
+            return resp
+
     if not start_time or not end_time:
         session.close()
-        return json.dumps({'message': 'Shift was not created, No start time or end time was provided'})
+        resp = Response(json.dumps({'error': 'Shift was not created, No start time or end time was provided'}), status=400, mimetype='application/json')
+    elif not user_id:
+        session.close()
+        resp = Response(json.dumps({'error': 'Shift was not created, No user id was provided'}), status=400, mimetype='application/json')
     else:
         session.add(shift)
         session.commit()
         session.close()
-        return json.dumps({'message': "Shift Created"})
+        resp = Response(json.dumps({'message': "Shift Created"}), status=200, mimetype='application/json')
+    return resp
+
+@app.route('/shift/<int:shift_id>', methods=["PUT"])
+def edit_shift(shift_id):
+    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    request_body = request.get_json()
+    user_id = None
+    start_time = None
+    end_time = None
+
+    if request_body.get('user_id'):
+        user_id = request_body['user_id']
+    if request_body.get('start_time'):
+        start_time = request_body['start_time']
+    if request_body.get('end_time'):
+        end_time = request_body['end_time']
+
+    shift = session.query(Shift).filter(
+        Shift.id == shift_id
+    ).first()
+    user = session.query(User).filter(
+        User.id == user_id
+    ).first()
+
+    for user_shift in user.shifts:
+        if start_time >= user_shift.start_time and start_time <= user_shift.end_time and user_shift.id is not shift_id:
+            session.close()
+            resp = Response(json.dumps({'error': 'Start Time overlaps with existing shift'}),
+                            status=400, mimetype='application/json')
+            return resp
+        elif end_time >= user_shift.start_time and end_time <= user_shift.end_time and user_shift.id is not shift_id:
+            session.close()
+            resp = Response(json.dumps({'error': 'End Time overlaps with existing shift'}),
+                            status=400, mimetype='application/json')
+            return resp
+
+    if not start_time or not end_time:
+        session.close()
+        resp = Response(json.dumps({'error': 'No start time or end time was provided'}), status=400, mimetype='application/json')
+    elif not user_id:
+        session.close()
+        resp = Response(json.dumps({'error': 'No user id was provided'}), status=400, mimetype='application/json')
+    else:
+        shift.end_time = end_time
+        shift.start_time = start_time
+        shift.user_id = user_id
+        session.commit()
+        session.close()
+        resp = Response(json.dumps({'message': "Shift Edited"}), status=200, mimetype='application/json')
+    return resp
 
 
 @app.route('/shift/<int:shift_id>', methods=["GET"])
@@ -160,9 +272,10 @@ def get_shift(shift_id):
             "user_first_name": shift.user.first_name,
             "user_last_name": shift.user.last_name
         }
-        return json.dumps(return_object)
+        resp = Response(json.dumps(return_object), status=200, mimetype='application/json')
     else:
-        return json.dumps({'error': "User does not exist"})
+        resp = Response(json.dumps({'error': "User does not exist"}), status=400, mimetype='application/json')
+    return resp
 
 
 @app.route('/shifts', methods=["GET"])
@@ -195,11 +308,8 @@ def get_shifts():
             }
             shift_list.append(shift_values)
         session.close()
-        return json.dumps(shift_list)
-
-    else:
-        session.close()
-        return json.dumps({'message': 'No Shifts were found'})
+    resp = Response(json.dumps(shift_list), status=200, mimetype='application/json')
+    return resp
 
 
 @app.route('/shift/<int:shift_id>', methods=["DELETE"])
@@ -212,10 +322,11 @@ def delete_shift(shift_id):
         session.delete(shift)
         session.commit()
         session.close()
-        return json.dumps({'message': 'Value Deleted'})
+        resp = Response(json.dumps({'message': 'Value Deleted'}), status=200, mimetype='application/json')
     else:
         session.close()
-        return json.dumps({'error': "Shift does not exist"})
+        resp = Response(json.dumps({'error': "Shift does not exist"}), status=400, mimetype='application/json')
+    return resp
 
 
 if __name__ == "__main__":

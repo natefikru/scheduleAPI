@@ -1,6 +1,7 @@
 import React from 'react'
 import CreateShiftModal from "./modals/createShift";
 import Modal from 'react-bootstrap/Modal'
+import { Route, Link, BrowserRouter as Router, Switch } from 'react-router-dom'
 
 export default class Shifts extends React.Component {
 
@@ -51,8 +52,8 @@ export default class Shifts extends React.Component {
                     </thead>
                     <tbody>
                     {this.state.shifts.map((shift) => (
-                        <tr key={shift.id} onClick={this.props.showShift}>
-                            <th scope="row">{shift.id}</th>
+                        <tr key={shift.id}>
+                            <th scope="row"><Link to={`/shifts/${shift.id}`}>{shift.id}</Link></th>
                             <th scope="row">{shift.user_first_name} {shift.user_last_name}</th>
                             <th scope="row">{shift.start_time}</th>
                             <th scope="row">{shift.end_time}</th>
