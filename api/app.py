@@ -93,6 +93,7 @@ def edit_user(user_id):
         is_manager = request_body['is_manager']
     if request_body.get('email'):
         email = request_body.get('email')
+        
 
     if not first_name or not last_name or not email:
         session.close()
@@ -125,7 +126,8 @@ def get_users():
                 "first_name": user_object.first_name,
                 "last_name": user_object.last_name,
                 "email": user_object.email,
-                "is_manager": user_object.is_manager
+                "is_manager": user_object.is_manager,
+                "password" : user_object.password
             }
             user_list.append(return_object)
     resp = Response(json.dumps(user_list), status=200, mimetype='application/json')
