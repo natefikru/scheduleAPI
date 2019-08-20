@@ -7,6 +7,9 @@ import DropdownButton from "react-bootstrap/DropdownButton";
 import { Row, Col } from 'react-bootstrap';
 import axios from 'axios'
 
+let apiHost = `http://${process.env.REACT_APP_API_HOST}`;
+
+
 
 export default class CreateShiftModal extends React.Component {
     constructor(props) {
@@ -24,7 +27,7 @@ export default class CreateShiftModal extends React.Component {
     handleSubmit = event => {
         try {
             const response = axios.post(
-                'http://localhost:5000/shift',
+                `${apiHost}/shift`,
                 {
                     user_id: this.state.selectedUserId,
                     start_time: this.state.startTime,

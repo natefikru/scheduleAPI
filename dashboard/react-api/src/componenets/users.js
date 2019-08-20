@@ -4,6 +4,8 @@ import Modal from 'react-bootstrap/Modal'
 import {Route, Link, BrowserRouter as Router, Switch} from 'react-router-dom'
 import {Redirect} from "react-router";
 
+let apiHost = `http://${process.env.REACT_APP_API_HOST}`;
+
 
 
 export default class Users extends React.Component {
@@ -35,7 +37,7 @@ export default class Users extends React.Component {
 
 
     componentDidMount() {
-        fetch('http://localhost:5000/users')
+        fetch(`${apiHost}/users`)
             .then(res => res.json())
             .then((data) => {
                 this.setState({users: data})

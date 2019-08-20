@@ -7,6 +7,7 @@ import { Redirect } from 'react-router'
 import {forEach} from "react-bootstrap/es/utils/ElementChildren";
 import { Route, Link, BrowserRouter as Router, Switch } from 'react-router-dom'
 
+let apiHost = `http://${process.env.REACT_APP_API_HOST}`;
 
 
 export default class User extends React.Component {
@@ -29,14 +30,14 @@ export default class User extends React.Component {
     }
 
     componentDidMount() {
-        fetch('http://localhost:5000/user/' + this.state.userId)
+        fetch(`${apiHost}/user/${this.state.userId}`)
             .then(res => res.json())
             .then((data) => {
                 this.setState({user: data});
                 this.setState({users : [data]})
             })
             .catch(console.log)
-        fetch('http://localhost:5000/user/' + this.state.userId + '/shifts')
+        fetch(`${apiHost}/user/${this.state.userId}/shifts`)
             .then(res => res.json())
             .then((data) => {
                 this.setState({shifts: data});
@@ -65,12 +66,12 @@ export default class User extends React.Component {
             forEach(this.state.shifts.forEach((shift) => {
                 if (shift.user_id === this.state.user.id) {
                     const response = axios.delete(
-                        `http://localhost:5000/shift/${shift.id}`
+                        `${apiHost}/shift/${shift.id}`
                     )
                 }
             }));
             const response = axios.delete(
-                `http://localhost:5000/user/${this.state.user.id}`
+                `${apiHost}/user/${this.state.user.id}`
             ).then(() => {
                 this.setState({
                     toUsers: "true"

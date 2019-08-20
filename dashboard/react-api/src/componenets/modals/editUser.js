@@ -6,6 +6,9 @@ import {Row, Col} from 'react-bootstrap';
 import axios from 'axios'
 import {Redirect} from "react-router";
 
+let apiHost = `http://${process.env.REACT_APP_API_HOST}`;
+
+
 
 export default class CreateUserModal extends React.Component {
     constructor(props) {
@@ -24,7 +27,7 @@ export default class CreateUserModal extends React.Component {
     handleSubmit = event => {
         try {
             const response = axios.put(
-                `http://localhost:5000/user/${this.state.userId}`,
+                `${apiHost}/user/${this.state.userId}`,
                 {
                     first_name: this.state.firstName,
                     last_name: this.state.lastName,

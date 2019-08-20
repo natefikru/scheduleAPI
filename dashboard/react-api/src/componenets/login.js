@@ -6,6 +6,7 @@ import axios from "axios";
 import sha256 from "js-sha256"
 import {Redirect} from "react-router";
 
+let apiHost = `http://${process.env.REACT_APP_API_HOST}`;
 
 export default class Login extends React.Component {
     constructor(props) {
@@ -28,7 +29,7 @@ export default class Login extends React.Component {
     handleSubmit = (e) => {
         try {
             const response = axios.post(
-                `http://localhost:5000/login`,
+                `${apiHost}/login`,
                 {
                     password: sha256(this.state.password),
                     email: this.state.email

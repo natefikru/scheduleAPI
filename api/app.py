@@ -2,7 +2,7 @@ import json
 from flask import request, Response
 from sqlalchemy import and_
 from models import User, Shift, app, database_file
-import sqlite_helper as sh
+import sqlite_conn as sc
 from flask_cors import CORS
 import arrow
 
@@ -12,7 +12,7 @@ SQLITE_URI = database_file
 
 @app.route("/login", methods=["POST"])
 def check_login():
-    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    session = sc.Sqlite.get_session(url=SQLITE_URI)
     request_body = request.get_json()
 
     email = ""
@@ -44,10 +44,9 @@ def check_login():
     return resp
 
 
-
 @app.route("/user", methods=["POST"])
 def create_user():
-    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    session = sc.Sqlite.get_session(url=SQLITE_URI)
     request_body = request.get_json()
     first_name = ""
     last_name = ""
@@ -79,7 +78,7 @@ def create_user():
 
 @app.route("/user/<int:user_id>", methods=["PUT"])
 def edit_user(user_id):
-    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    session = sc.Sqlite.get_session(url=SQLITE_URI)
     request_body = request.get_json()
     first_name = ""
     last_name = ""
@@ -114,7 +113,7 @@ def edit_user(user_id):
 
 @app.route('/users', methods=["GET"])
 def get_users():
-    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    session = sc.Sqlite.get_session(url=SQLITE_URI)
     users_object_list = session.query(User).all()
 
     session.close()
@@ -136,7 +135,7 @@ def get_users():
 
 @app.route('/user/<int:user_id>', methods=["GET"])
 def get_user(user_id):
-    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    session = sc.Sqlite.get_session(url=SQLITE_URI)
     user = session.query(User).filter(
         User.id == user_id
     ).first()
@@ -157,7 +156,7 @@ def get_user(user_id):
 
 @app.route('/user/<int:user_id>/shifts', methods=["GET"])
 def get_user_shifts(user_id):
-    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    session = sc.Sqlite.get_session(url=SQLITE_URI)
     user = session.query(User).filter(
         User.id == user_id
     ).first()
@@ -182,7 +181,7 @@ def get_user_shifts(user_id):
 
 @app.route('/user/<int:user_id>', methods=["DELETE"])
 def delete_user(user_id):
-    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    session = sc.Sqlite.get_session(url=SQLITE_URI)
     user = session.query(User).filter(
         User.id == user_id
     ).first()
@@ -199,7 +198,7 @@ def delete_user(user_id):
 
 @app.route("/shift", methods=["POST"])
 def create_shift():
-    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    session = sc.Sqlite.get_session(url=SQLITE_URI)
     request_body = request.get_json()
     user_id = None
     start_time_epoch = None
@@ -245,7 +244,7 @@ def create_shift():
 
 @app.route('/shift/<int:shift_id>', methods=["PUT"])
 def edit_shift(shift_id):
-    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    session = sc.Sqlite.get_session(url=SQLITE_URI)
     request_body = request.get_json()
     user_id = None
     start_time_epoch = None
@@ -294,7 +293,7 @@ def edit_shift(shift_id):
 
 @app.route('/shift/<int:shift_id>', methods=["GET"])
 def get_shift(shift_id):
-    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    session = sc.Sqlite.get_session(url=SQLITE_URI)
     session.close()
     shift = session.query(Shift).filter(
         Shift.id == shift_id
@@ -317,7 +316,7 @@ def get_shift(shift_id):
 
 @app.route('/shifts', methods=["GET"])
 def get_shifts():
-    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    session = sc.Sqlite.get_session(url=SQLITE_URI)
 
     start_time = arrow.get(0).datetime
     end_time = arrow.get(2147483647).datetime
@@ -352,7 +351,7 @@ def get_shifts():
 
 @app.route('/shift/<int:shift_id>', methods=["DELETE"])
 def delete_shift(shift_id):
-    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    session = sc.Sqlite.get_session(url=SQLITE_URI)
     shift = session.query(Shift).filter(
         Shift.id == shift_id
     ).first()

@@ -3,6 +3,8 @@ import CreateShiftModal from "./modals/createShift";
 import Modal from 'react-bootstrap/Modal'
 import { Route, Link, BrowserRouter as Router, Switch } from 'react-router-dom'
 
+let apiHost = `http://${process.env.REACT_APP_API_HOST}`;
+
 export default class Shifts extends React.Component {
 
     constructor(props) {
@@ -15,13 +17,13 @@ export default class Shifts extends React.Component {
     }
 
     componentDidMount() {
-        fetch('http://localhost:5000/users')
+        fetch(`${apiHost}/users`)
             .then(res => res.json())
             .then((data) => {
                 this.setState({users: data})
             }).catch(console.log);
 
-        fetch('http://localhost:5000/shifts')
+        fetch(`${apiHost}/shifts`)
             .then(res => res.json())
             .then((data) => {
                 this.setState({shifts: data})

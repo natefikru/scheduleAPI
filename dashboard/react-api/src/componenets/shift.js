@@ -5,6 +5,8 @@ import { Route, Link, BrowserRouter as Router, Switch } from 'react-router-dom'
 import Modal from "react-bootstrap/Modal";
 import EditShiftModal from "./modals/editShift";
 
+let apiHost = `http://${process.env.REACT_APP_API_HOST}`;
+
 
 export default class Shift extends React.Component {
     constructor(props) {
@@ -18,7 +20,7 @@ export default class Shift extends React.Component {
     }
 
     componentDidMount() {
-        fetch('http://localhost:5000/shift/' + this.state.shiftId)
+        fetch(`${apiHost}/shift/${this.state.shiftId}`)
             .then(res => res.json())
             .then((data) => {
                 this.setState({shift: data});
@@ -38,7 +40,7 @@ export default class Shift extends React.Component {
     deleteShift = () => {
         try {
             const response = axios.delete(
-                `http://localhost:5000/shift/${this.state.shift.id}`
+                `${apiHost}/shift/${this.state.shift.id}`
             ).then(() => {
                 this.setState({
                     toShifts: "true"
