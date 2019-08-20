@@ -8,7 +8,6 @@ import EditShiftModal from "./modals/editShift";
 
 export default class Shift extends React.Component {
     constructor(props) {
-        console.log(props)
         super(props);
         this.state = {
             shift: {},
@@ -38,7 +37,6 @@ export default class Shift extends React.Component {
 
     deleteShift = () => {
         try {
-            console.log(this.state)
             const response = axios.delete(
                 `http://localhost:5000/shift/${this.state.shift.id}`
             ).then(() => {
@@ -69,7 +67,7 @@ export default class Shift extends React.Component {
                             </div>
                         </div>
                         <Modal show={this.state.showEdit}>
-                            <EditShiftModal  onHide={this.hideEditShiftModal} shiftId={this.state.shiftId}/>
+                            <EditShiftModal  onHide={this.hideEditShiftModal} shiftId={this.state.shiftId} userId={this.state.shift.user_id}/>
                         </Modal>
                         <button type="button" className="btn btn-danger" onClick={this.deleteShift}>Delete Shift</button>
                         <button type="button" className="btn btn-info" onClick={this.showEditShiftModal}>Edit Shift</button>

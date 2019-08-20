@@ -29,7 +29,6 @@ export default class User extends React.Component {
     }
 
     componentDidMount() {
-        console.log('component is mounting')
         fetch('http://localhost:5000/user/' + this.state.userId)
             .then(res => res.json())
             .then((data) => {
@@ -64,7 +63,6 @@ export default class User extends React.Component {
     deleteUser = () => {
         try {
             forEach(this.state.shifts.forEach((shift) => {
-                console.log(shift)
                 if (shift.user_id === this.state.user.id) {
                     const response = axios.delete(
                         `http://localhost:5000/shift/${shift.id}`

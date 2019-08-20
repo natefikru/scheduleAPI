@@ -32,7 +32,6 @@ export default class CreateUserModal extends React.Component {
                 }).then(() => {
                     window.location.reload();
             });
-            console.log('response:', response);
         } catch (e) {
             console.log(`error: ${e}`);
         }

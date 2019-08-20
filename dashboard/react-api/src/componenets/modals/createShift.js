@@ -30,7 +30,6 @@ export default class CreateShiftModal extends React.Component {
                     start_time: this.state.startTime,
                     end_time: this.state.endTime
                 });
-            console.log('response:', response);
         } catch (e) {
             console.log(`error: ${e}`);
         }
@@ -38,7 +37,6 @@ export default class CreateShiftModal extends React.Component {
     };
 
     onChange = (e) => {
-        console.log(this.state)
         if (e) {
             if (typeof e.target.value === 'undefined') {
                 this.setState({

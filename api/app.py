@@ -4,15 +4,11 @@ from sqlalchemy import and_
 from models import User, Shift, app, database_file
 import sqlite_helper as sh
 from flask_cors import CORS
+import arrow
 
 CORS(app)
 
 SQLITE_URI = database_file
-
-
-@app.route("/", methods=["GET", "POST"])
-def home():
-    return "My flask app"
 
 
 @app.route("/user", methods=["POST"])
@@ -40,7 +36,7 @@ def create_user():
         session.add(user)
         session.commit()
         session.close()
-        resp = Response(json.dumps({'message': "User Created"}), status=200, mimetype='application/json')
+        resp = Response(json.dumps({'message': "User Created"}), status=201, mimetype='application/json')
     return resp
 
 @app.route("/user/<int:user_id>", methods=["PUT"])
@@ -115,7 +111,7 @@ def get_user(user_id):
         }
         resp = Response(json.dumps(return_object), status=200, mimetype='application/json')
     else:
-        return Response(json.dumps({'error': "User ID does not exist"}), status=400, mimetype='application/json')
+        return Response(json.dumps({'error': "User ID does not exist"}), status=404, mimetype='application/json')
     return resp
 
 
@@ -132,15 +128,15 @@ def get_user_shifts(user_id):
                 shift = {
                     "id": shift_object.id,
                     "user_id": shift_object.user_id,
-                    "start_time": shift_object.start_time,
-                    "end_time": shift_object.end_time
+                    "start_time": arrow.get(shift_object.start_time).timestamp,
+                    "end_time": arrow.get(shift_object.end_time).timestamp
                 }
                 user_shift_list.append(shift)
             session.close()
         resp = Response(json.dumps(user_shift_list), status=200, mimetype='application/json')
     else:
         session.close()
-        resp = Response(json.dumps({'error': "User ID does not exist"}), status=400, mimetype='application/json')
+        resp = Response(json.dumps({'error': "User ID does not exist"}), status=404, mimetype='application/json')
     return resp
 
 
@@ -157,7 +153,7 @@ def delete_user(user_id):
         resp = Response(json.dumps({'message': 'User Deleted'}), status=200, mimetype='application/json')
     else:
         session.close()
-        resp = Response(json.dumps({'error': "User does not exist"}), status=400, mimetype='application/json')
+        resp = Response(json.dumps({'error': "User does not exist"}), status=404, mimetype='application/json')
     return resp
 
 
@@ -166,34 +162,35 @@ def create_shift():
     session = sh.Sqlite.get_session(url=SQLITE_URI)
     request_body = request.get_json()
     user_id = None
-    start_time = None
-    end_time = None
+    start_time_epoch = None
+    end_time_epoch = None
 
     if request_body.get('user_id'):
         user_id = request_body['user_id']
     if request_body.get('start_time'):
-        start_time = request_body['start_time']
+        start_time_epoch = request_body['start_time']
     if request_body.get('end_time'):
-        end_time = request_body['end_time']
+        end_time_epoch = request_body['end_time']
 
     user = session.query(User).filter(
         User.id == user_id
     ).first()
 
-    shift = Shift(user_id=user_id, start_time=start_time, end_time=end_time)
+    shift = Shift(user_id=user_id, start_time=arrow.get(start_time_epoch).datetime, end_time=arrow.get(end_time_epoch).datetime)
+
     for user_shift in user.shifts:
-        if start_time >= user_shift.start_time and start_time <= user_shift.end_time:
+        if int(start_time_epoch) >= arrow.get(user_shift.start_time).timestamp and int(start_time_epoch) <= arrow.get(user_shift.end_time).timestamp:
             session.close()
             resp = Response(json.dumps({'error': 'Start Time overlaps with existing shift'}),
                             status=400, mimetype='application/json')
             return resp
-        elif end_time >= user_shift.start_time and end_time <= user_shift.end_time:
+        elif int(end_time_epoch) >= arrow.get(user_shift.start_time).timestamp and int(end_time_epoch) <= arrow.get(user_shift.end_time).timestamp:
             session.close()
             resp = Response(json.dumps({'error': 'End Time overlaps with existing shift'}),
                             status=400, mimetype='application/json')
             return resp
 
-    if not start_time or not end_time:
+    if not start_time_epoch or not end_time_epoch:
         session.close()
         resp = Response(json.dumps({'error': 'Shift was not created, No start time or end time was provided'}), status=400, mimetype='application/json')
     elif not user_id:
@@ -203,7 +200,7 @@ def create_shift():
         session.add(shift)
         session.commit()
         session.close()
-        resp = Response(json.dumps({'message': "Shift Created"}), status=200, mimetype='application/json')
+        resp = Response(json.dumps({'message': "Shift Created"}), status=201, mimetype='application/json')
     return resp
 
 @app.route('/shift/<int:shift_id>', methods=["PUT"])
@@ -211,15 +208,15 @@ def edit_shift(shift_id):
     session = sh.Sqlite.get_session(url=SQLITE_URI)
     request_body = request.get_json()
     user_id = None
-    start_time = None
-    end_time = None
+    start_time_epoch = None
+    end_time_epoch = None
 
+    if request_body.get('start_time'):
+        start_time_epoch = request_body['start_time']
+    if request_body.get('end_time'):
+        end_time_epoch = request_body['end_time']
     if request_body.get('user_id'):
         user_id = request_body['user_id']
-    if request_body.get('start_time'):
-        start_time = request_body['start_time']
-    if request_body.get('end_time'):
-        end_time = request_body['end_time']
 
     shift = session.query(Shift).filter(
         Shift.id == shift_id
@@ -229,27 +226,26 @@ def edit_shift(shift_id):
     ).first()
 
     for user_shift in user.shifts:
-        if start_time >= user_shift.start_time and start_time <= user_shift.end_time and user_shift.id is not shift_id:
+        if int(start_time_epoch) >= arrow.get(user_shift.start_time).timestamp and int(start_time_epoch) <= arrow.get(user_shift.end_time).timestamp and user_shift.id is not shift_id:
             session.close()
             resp = Response(json.dumps({'error': 'Start Time overlaps with existing shift'}),
                             status=400, mimetype='application/json')
             return resp
-        elif end_time >= user_shift.start_time and end_time <= user_shift.end_time and user_shift.id is not shift_id:
+        elif int(end_time_epoch) >= arrow.get(user_shift.start_time).timestamp and int(end_time_epoch) <= arrow.get(user_shift.end_time).timestamp and user_shift.id is not shift_id:
             session.close()
             resp = Response(json.dumps({'error': 'End Time overlaps with existing shift'}),
                             status=400, mimetype='application/json')
             return resp
 
-    if not start_time or not end_time:
+    if not start_time_epoch or not end_time_epoch:
         session.close()
         resp = Response(json.dumps({'error': 'No start time or end time was provided'}), status=400, mimetype='application/json')
     elif not user_id:
         session.close()
         resp = Response(json.dumps({'error': 'No user id was provided'}), status=400, mimetype='application/json')
     else:
-        shift.end_time = end_time
-        shift.start_time = start_time
-        shift.user_id = user_id
+        shift.start_time = arrow.get(start_time_epoch).datetime
+        shift.end_time = arrow.get(end_time_epoch).datetime
         session.commit()
         session.close()
         resp = Response(json.dumps({'message': "Shift Edited"}), status=200, mimetype='application/json')
@@ -263,18 +259,19 @@ def get_shift(shift_id):
     shift = session.query(Shift).filter(
         Shift.id == shift_id
     ).first()
+
     if shift:
         return_object = {
             "id": shift.id,
             "user_id": shift.user_id,
-            "start_time": shift.start_time,
-            "end_time": shift.end_time,
+            "start_time": arrow.get(shift.start_time).timestamp,
+            "end_time": arrow.get(shift.end_time).timestamp,
             "user_first_name": shift.user.first_name,
             "user_last_name": shift.user.last_name
         }
         resp = Response(json.dumps(return_object), status=200, mimetype='application/json')
     else:
-        resp = Response(json.dumps({'error': "User does not exist"}), status=400, mimetype='application/json')
+        resp = Response(json.dumps({'error': "User does not exist"}), status=404, mimetype='application/json')
     return resp
 
 
@@ -282,13 +279,14 @@ def get_shift(shift_id):
 def get_shifts():
     session = sh.Sqlite.get_session(url=SQLITE_URI)
 
-    start_time = -2147483648
-    end_time = 2147483647
+    start_time = arrow.get(0).datetime
+    end_time = arrow.get(2147483647).datetime
 
     if request.args.get('start_time'):
         start_time = request.args.get('start_time')
     if request.args.get('end_time'):
         end_time = request.args.get('end_time')
+
 
     shift_object_list = session.query(Shift).filter(and_(
         Shift.start_time > start_time,
@@ -301,8 +299,8 @@ def get_shifts():
             shift_values = {
                 "id": shift_object.id,
                 "user_id": shift_object.user_id,
-                "start_time": shift_object.start_time,
-                "end_time": shift_object.end_time,
+                "start_time": arrow.get(shift_object.start_time).timestamp,
+                "end_time": arrow.get(shift_object.end_time).timestamp,
                 "user_first_name": shift_object.user.first_name,
                 "user_last_name": shift_object.user.last_name
             }
@@ -325,7 +323,7 @@ def delete_shift(shift_id):
         resp = Response(json.dumps({'message': 'Value Deleted'}), status=200, mimetype='application/json')
     else:
         session.close()
-        resp = Response(json.dumps({'error': "Shift does not exist"}), status=400, mimetype='application/json')
+        resp = Response(json.dumps({'error': "Shift does not exist"}), status=404, mimetype='application/json')
     return resp
 
 

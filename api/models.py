@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from flask_sqlalchemy import SQLAlchemy
@@ -33,7 +33,7 @@ class Shift(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship("User", back_populates="shifts")
-    start_time = Column(Integer)
-    end_time = Column(Integer)
+    start_time = Column(DateTime)
+    end_time = Column(DateTime)
 
 Base.metadata.create_all(create_engine(database_file, echo=True))

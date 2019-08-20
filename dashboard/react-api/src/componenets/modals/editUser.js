@@ -36,7 +36,6 @@ export default class CreateUserModal extends React.Component {
                     toUsers: true
                 })
             });
-            console.log('response:', response);
         } catch (e) {
             console.log(`error: ${e}`);
         }

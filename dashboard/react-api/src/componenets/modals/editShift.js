@@ -15,21 +15,13 @@ export default class EditShiftModal extends React.Component {
         this.state = {
             startTime : '',
             endTime : '',
-            users : [],
             selectedUser : "Choose User",
-            selectedUserId : '',
+            selectedUserId : this.props.userId,
             shiftId : props.shiftId,
             toShifts: false
         }
     }
 
-    componentDidMount() {
-        fetch('http://localhost:5000/users')
-            .then(res => res.json())
-            .then((data) => {
-                this.setState({users: data})
-            }).catch(console.log);
-    }
 
 
     handleSubmit = event => {
@@ -52,7 +44,6 @@ export default class EditShiftModal extends React.Component {
     };
 
     onChange = (e) => {
-        console.log(this.state)
         if (e) {
             if (typeof e.target.value === 'undefined') {
                 this.setState({
@@ -79,19 +70,6 @@ export default class EditShiftModal extends React.Component {
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
-                            <Form.Group controlId="formUserSelect">
-                                <DropdownButton id="dropdown-basic-button" title={selectedUser}>
-                                    {this.state.users.map((user) => (
-                                        <Dropdown.Item
-                                            name={user.first_name + ' ' + user.last_name}
-                                            id={user.id}
-                                            onClick={this.onChange}
-                                        >
-                                            {user.first_name} {user.last_name}
-                                        </Dropdown.Item>
-                                    ))}
-                                </DropdownButton>
-                            </Form.Group>
                             <Row>
                                 <Col>
                                     <Form.Group controlId="formStartTime">
