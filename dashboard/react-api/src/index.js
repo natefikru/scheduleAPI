@@ -8,6 +8,7 @@ import Shift from "./componenets/shift";
 import Users from './componenets/users'
 import User from './componenets/user'
 import Navbar from './componenets/navbar'
+import Login from './componenets/login'
 
 
 const routing = (
@@ -15,11 +16,12 @@ const routing = (
         <Navbar/>
         <Router>
             <div>
-                <Route exact path="/" component={Users} />
+                <Route exact path="/" component={Login} />
                 <Route exact  path="/users" component={Users}/>
                 <Route path="/users/:id" component={User}/>
                 <Route exact path="/shifts" component={Shifts} />
                 <Route path="/shifts/:id" component={Shift}/>
+                <Route path="/login" component={Login}/>
             </div>
         </Router>
     </div>

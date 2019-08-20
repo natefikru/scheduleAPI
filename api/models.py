@@ -25,6 +25,7 @@ class User(Base):
     email = Column(String(1000))
     shifts = relationship("Shift", back_populates="user")
     is_manager = Column(Boolean)
+    password = Column(String(1000))
 
 class Shift(Base):
 

@@ -1,10 +1,10 @@
 import React from 'react'
-
 import Modal from 'react-bootstrap/Modal'
 import Button from "react-bootstrap/Button";
 import Form from 'react-bootstrap/Form'
 import { Row, Col } from 'react-bootstrap';
 import axios from 'axios'
+import sha256 from "js-sha256";
 
 
 export default class CreateUserModal extends React.Component {
@@ -14,6 +14,7 @@ export default class CreateUserModal extends React.Component {
             firstName : '',
             lastName : '',
             email : '',
+            password : '',
             isManager : false
         }
     }
@@ -28,6 +29,7 @@ export default class CreateUserModal extends React.Component {
                     last_name: this.state.lastName,
                     email: this.state.email,
                     is_manager: this.state.isManager,
+                    password : sha256(this.state.password)
 
                 }).then(() => {
                     window.location.reload();
@@ -51,7 +53,6 @@ export default class CreateUserModal extends React.Component {
                 });
             }
         }
-
     };
 
     render() {
@@ -63,6 +64,20 @@ export default class CreateUserModal extends React.Component {
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
+                        <Form.Group controlId="formBasicEmail">
+                            <Form.Label>Email address</Form.Label>
+                            <Form.Control
+                                type="email"
+                                placeholder="Enter email"
+                                name="email"
+                                value={email}
+                                onChange={this.onChange}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="formBasicPassword">
+                            <Form.Label>Password</Form.Label>
+                            <Form.Control name="password" onChange={this.onChange} type="password" placeholder="Password"/>
+                        </Form.Group>
                         <Row>
                             <Col>
                                 <Form.Group controlId="formUserFirstName">
@@ -89,16 +104,6 @@ export default class CreateUserModal extends React.Component {
                                 </Form.Group>
                             </Col>
                         </Row>
-                        <Form.Group controlId="formBasicEmail">
-                            <Form.Label>Email address</Form.Label>
-                            <Form.Control
-                                type="email"
-                                placeholder="Enter email"
-                                name="email"
-                                value={email}
-                                onChange={this.onChange}
-                            />
-                        </Form.Group>
                         <Form.Check
                             type='checkbox'
                             label={'Manager'}

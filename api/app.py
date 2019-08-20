@@ -10,6 +10,40 @@ CORS(app)
 
 SQLITE_URI = database_file
 
+@app.route("/login", methods=["POST"])
+def check_login():
+    session = sh.Sqlite.get_session(url=SQLITE_URI)
+    request_body = request.get_json()
+
+    email = ""
+    password = ""
+
+    if request_body.get('email'):
+        email = request_body['email']
+    if request_body.get('password'):
+        password = request_body['password']
+
+    if not email or not password:
+        session.close()
+        resp = Response(json.dumps({'error': 'user or password not received'}), status=400, mimetype='application/json')
+    else:
+        user = session.query(User).filter(and_(
+            User.email == email,
+            User.password == password
+        )).first()
+        if user:
+            user_object = {
+                "id" : user.id,
+                "email" : user.email,
+                "is_manager" : user.is_manager
+            }
+            resp = Response(json.dumps({'data' : user_object}), status=200, mimetype='application/json')
+        else:
+            resp = Response(json.dumps({'error': 'user or password incorrect'}), status=400,
+                            mimetype='application/json')
+    return resp
+
+
 
 @app.route("/user", methods=["POST"])
 def create_user():
@@ -18,6 +52,8 @@ def create_user():
     first_name = ""
     last_name = ""
     email = ""
+    password = ""
+
     is_manager = False
     if request_body.get('first_name'):
         first_name = request_body['first_name']
@@ -27,12 +63,14 @@ def create_user():
         is_manager = request_body['is_manager']
     if request_body.get('email'):
         email = request_body.get('email')
+    if request_body.get('password'):
+        password = request_body.get('password')
 
-    if not first_name or not last_name or not email:
+    if not first_name or not last_name or not email or not password:
         session.close()
         resp = Response(json.dumps({'error': 'received partial data'}), status=400, mimetype='application/json')
     else:
-        user = User(first_name=first_name, last_name=last_name, is_manager=is_manager, email=email)
+        user = User(first_name=first_name, last_name=last_name, is_manager=is_manager, email=email, password=password)
         session.add(user)
         session.commit()
         session.close()

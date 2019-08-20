@@ -10,7 +10,8 @@
     "react-dom": "^16.9.0",
     "react-scripts": "3.1.1",
     "react-router-dom": "latest",
-    "react-router": "latest"
+    "react-router": "latest",
+    "js-sha256": "latest"
   },
   "scripts": {
     "start": "react-scripts start",

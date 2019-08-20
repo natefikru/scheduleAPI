@@ -2,6 +2,7 @@ import React from 'react'
 
 
 export default class Navbar extends React.Component {
+
     render() {
         return (
             <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -15,7 +16,16 @@ export default class Navbar extends React.Component {
                             <a className="nav-item nav-link" href='/users'>Users</a>
                             <a onClick={this.props.showShifts} className="nav-item nav-link" href='/shifts'>Shifts</a>
                         </div>
+
                     </div>
+
+                </div>
+                <div className="navbar-collapse collapse w-100 order-3 dual-collapse2">
+                    <ul className="navbar-nav ml-auto">
+                        <li className="nav-item">
+                            <a className="nav-link" href="/login">Logout</a>
+                        </li>
+                    </ul>
                 </div>
             </nav>
         )
