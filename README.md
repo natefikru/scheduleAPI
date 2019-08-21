@@ -6,10 +6,11 @@ This is a schedule application built for demo purposes. The application componen
 [API Documentation can be found here](https://app.swaggerhub.com/apis-docs/natefikru/scheduleAPI/1.0.0)
 
 ## Deployment
-Flask API is deployed at 52.14.162.51:5000
-React Application is deployed at 52.14.162.51:3000
+Flask API is deployed at **52.14.162.51:5000** React Application is deployed at **52.14.162.51:3000** on a single ec2 instance
 
 To Log into React Application use credentials **email: testuser@gmail.com and pw: password**
+
+Ideally, I would run both apps within unique docker containers and deploy them with a container orchestration/deployment tool like docker compose or kubernetes.
 
 ## PRELIMINARY NOTES
 There are a few features that aren’t complete due to not having enough time. I’ll list them here:
