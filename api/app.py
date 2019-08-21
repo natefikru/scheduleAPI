@@ -115,8 +115,6 @@ def edit_user(user_id):
 def get_users():
     session = sc.Sqlite.get_session(url=SQLITE_URI)
     users_object_list = session.query(User).all()
-
-    session.close()
     user_list = []
     if users_object_list:
         for user_object in users_object_list:
@@ -129,6 +127,7 @@ def get_users():
                 "password" : user_object.password
             }
             user_list.append(return_object)
+    session.close()
     resp = Response(json.dumps(user_list), status=200, mimetype='application/json')
     return resp
 
@@ -139,7 +138,6 @@ def get_user(user_id):
     user = session.query(User).filter(
         User.id == user_id
     ).first()
-    session.close()
     if user:
         return_object = {
             "id": user.id,
@@ -150,7 +148,8 @@ def get_user(user_id):
         }
         resp = Response(json.dumps(return_object), status=200, mimetype='application/json')
     else:
-        return Response(json.dumps({'error': "User ID does not exist"}), status=404, mimetype='application/json')
+        resp = Response(json.dumps({'error': "User ID does not exist"}), status=404, mimetype='application/json')
+    session.close()
     return resp
 
 
@@ -298,8 +297,6 @@ def get_shift(shift_id):
         Shift.id == shift_id
     ).first()
 
-    session.close()
-
     if shift:
         return_object = {
             "id": shift.id,
@@ -309,6 +306,7 @@ def get_shift(shift_id):
             "user_first_name": shift.user.first_name,
             "user_last_name": shift.user.last_name
         }
+        session.close()
         resp = Response(json.dumps(return_object), status=200, mimetype='application/json')
     else:
         resp = Response(json.dumps({'error': "User does not exist"}), status=404, mimetype='application/json')
