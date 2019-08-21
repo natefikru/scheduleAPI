@@ -171,7 +171,7 @@ def get_user_shifts(user_id):
                     "end_time": arrow.get(shift_object.end_time).timestamp
                 }
                 user_shift_list.append(shift)
-            session.close()
+        session.close()
         resp = Response(json.dumps(user_shift_list), status=200, mimetype='application/json')
     else:
         session.close()
@@ -294,10 +294,11 @@ def edit_shift(shift_id):
 @app.route('/shift/<int:shift_id>', methods=["GET"])
 def get_shift(shift_id):
     session = sc.Sqlite.get_session(url=SQLITE_URI)
-    session.close()
     shift = session.query(Shift).filter(
         Shift.id == shift_id
     ).first()
+
+    session.close()
 
     if shift:
         return_object = {
@@ -344,7 +345,7 @@ def get_shifts():
                 "user_last_name": shift_object.user.last_name
             }
             shift_list.append(shift_values)
-        session.close()
+    session.close()
     resp = Response(json.dumps(shift_list), status=200, mimetype='application/json')
     return resp
 
