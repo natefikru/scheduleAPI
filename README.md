@@ -5,15 +5,22 @@ This is a schedule application built for demo purposes. The application componen
 ## API Documentation
 [API Documentation can be found here](https://app.swaggerhub.com/apis-docs/natefikru/scheduleAPI/1.0.0)
 
+## Deployment
+Flask API is deployed at 52.14.162.51:5000
+React Application is deployed at 52.14.162.51:3000
+
+To Log into React Application use credentials **email: testuser@gmail.com and pw: password**
+
 ## PRELIMINARY NOTES
-There are a number of features that aren’t complete due to timing. I’ll list them here:
+There are a few features that aren’t complete due to not having enough time. I’ll list them here:
 
 1. Add global state framework like Redux to persist login state (Login function works but does not carry on throughout the pages of the application).
 2. Accept user input of DATETIME type when creating shifts from the UI (currently only accepts timestamps even though database is saving as DATETIME)
 3. When write calls are invalid and an error is returned, show an error message to the user.
 4.Host the application in a secured production environment. (currently running as insecure development)
 5. Deploy application using docker for both applications to ensure fundamental steps of a seamless deployment pipeline.
-6. Within the API, create a process where, if the Call is a write call, (POST, PUT, DELTE), require the userID so the api can check to see if the user is a manager or not. (Make the restrict access for non-managers process more secure by incorporating API keys associated with the users.)
+6. Within the API, create a process where, if the call is a write call, (POST, PUT, DELETE), require the userID in the header so the api can check the DB to see if the user is a manager or not. The API would restrict access based on the result (Can also make restricting access for non-managers process more secure by incorporating API keys associated with each user required to make a call.)
+7. Bug where calls from React are periodically cancelled. Must incorporate a retry and/or fix core issue
 
 
 ## Installation
