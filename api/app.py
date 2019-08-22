@@ -4,11 +4,13 @@ from sqlalchemy import and_
 from models import User, Shift, app, database_file
 import sqlite_conn as sc
 from flask_cors import CORS
+from api_helpers import Helpers
 import arrow
 
 CORS(app)
 
 SQLITE_URI = database_file
+
 
 @app.route("/login", methods=["POST"])
 def check_login():
@@ -33,11 +35,11 @@ def check_login():
         )).first()
         if user:
             user_object = {
-                "id" : user.id,
-                "email" : user.email,
-                "is_manager" : user.is_manager
+                "id": user.id,
+                "email": user.email,
+                "is_manager": user.is_manager
             }
-            resp = Response(json.dumps({'data' : user_object}), status=200, mimetype='application/json')
+            resp = Response(json.dumps({'data': user_object}), status=200, mimetype='application/json')
         else:
             resp = Response(json.dumps({'error': 'user or password incorrect'}), status=400,
                             mimetype='application/json')
@@ -76,6 +78,7 @@ def create_user():
         resp = Response(json.dumps({'message': "User Created"}), status=201, mimetype='application/json')
     return resp
 
+
 @app.route("/user/<int:user_id>", methods=["PUT"])
 def edit_user(user_id):
     session = sc.Sqlite.get_session(url=SQLITE_URI)
@@ -92,7 +95,6 @@ def edit_user(user_id):
         is_manager = request_body['is_manager']
     if request_body.get('email'):
         email = request_body.get('email')
-        
 
     if not first_name or not last_name or not email:
         session.close()
@@ -124,7 +126,7 @@ def get_users():
                 "last_name": user_object.last_name,
                 "email": user_object.email,
                 "is_manager": user_object.is_manager,
-                "password" : user_object.password
+                "password": user_object.password
             }
             user_list.append(return_object)
     session.close()
@@ -214,32 +216,34 @@ def create_shift():
         User.id == user_id
     ).first()
 
-    shift = Shift(user_id=user_id, start_time=arrow.get(start_time_epoch).datetime, end_time=arrow.get(end_time_epoch).datetime)
+    shift = Shift(user_id=user_id, start_time=arrow.get(start_time_epoch).datetime,
+                  end_time=arrow.get(end_time_epoch).datetime)
+
+    input_start_time = int(start_time_epoch)
+    input_end_time = int(end_time_epoch)
 
     for user_shift in user.shifts:
-        if int(start_time_epoch) >= arrow.get(user_shift.start_time).timestamp and int(start_time_epoch) <= arrow.get(user_shift.end_time).timestamp:
+        if Helpers.check_shift_overlap(input_start_time, input_end_time, user_shift, shift_id=None):
             session.close()
-            resp = Response(json.dumps({'error': 'Start Time overlaps with existing shift'}),
-                            status=400, mimetype='application/json')
-            return resp
-        elif int(end_time_epoch) >= arrow.get(user_shift.start_time).timestamp and int(end_time_epoch) <= arrow.get(user_shift.end_time).timestamp:
-            session.close()
-            resp = Response(json.dumps({'error': 'End Time overlaps with existing shift'}),
-                            status=400, mimetype='application/json')
+            resp = Response(json.dumps({'error': 'Start Time or End Time overlaps with existing shift'}), status=400,
+                            mimetype='application/json')
             return resp
 
     if not start_time_epoch or not end_time_epoch:
         session.close()
-        resp = Response(json.dumps({'error': 'Shift was not created, No start time or end time was provided'}), status=400, mimetype='application/json')
+        resp = Response(json.dumps({'error': 'Shift was not created, No start time or end time was provided'}),
+                        status=400, mimetype='application/json')
     elif not user_id:
         session.close()
-        resp = Response(json.dumps({'error': 'Shift was not created, No user id was provided'}), status=400, mimetype='application/json')
+        resp = Response(json.dumps({'error': 'Shift was not created, No user id was provided'}), status=400,
+                        mimetype='application/json')
     else:
         session.add(shift)
         session.commit()
         session.close()
         resp = Response(json.dumps({'message': "Shift Created"}), status=201, mimetype='application/json')
     return resp
+
 
 @app.route('/shift/<int:shift_id>', methods=["PUT"])
 def edit_shift(shift_id):
@@ -263,21 +267,20 @@ def edit_shift(shift_id):
         User.id == user_id
     ).first()
 
+    input_start_time = int(start_time_epoch)
+    input_end_time = int(end_time_epoch)
+
     for user_shift in user.shifts:
-        if int(start_time_epoch) >= arrow.get(user_shift.start_time).timestamp and int(start_time_epoch) <= arrow.get(user_shift.end_time).timestamp and user_shift.id is not shift_id:
+        if Helpers.check_shift_overlap(input_start_time, input_end_time, user_shift, shift_id):
             session.close()
-            resp = Response(json.dumps({'error': 'Start Time overlaps with existing shift'}),
-                            status=400, mimetype='application/json')
-            return resp
-        elif int(end_time_epoch) >= arrow.get(user_shift.start_time).timestamp and int(end_time_epoch) <= arrow.get(user_shift.end_time).timestamp and user_shift.id is not shift_id:
-            session.close()
-            resp = Response(json.dumps({'error': 'End Time overlaps with existing shift'}),
-                            status=400, mimetype='application/json')
+            resp = Response(json.dumps({'error': 'Start Time or End Time overlaps with existing shift'}), status=400,
+                            mimetype='application/json')
             return resp
 
     if not start_time_epoch or not end_time_epoch:
         session.close()
-        resp = Response(json.dumps({'error': 'No start time or end time was provided'}), status=400, mimetype='application/json')
+        resp = Response(json.dumps({'error': 'No start time or end time was provided'}), status=400,
+                        mimetype='application/json')
     elif not user_id:
         session.close()
         resp = Response(json.dumps({'error': 'No user id was provided'}), status=400, mimetype='application/json')
@@ -324,7 +327,6 @@ def get_shifts():
         start_time = request.args.get('start_time')
     if request.args.get('end_time'):
         end_time = request.args.get('end_time')
-
 
     shift_object_list = session.query(Shift).filter(and_(
         Shift.start_time > start_time,
