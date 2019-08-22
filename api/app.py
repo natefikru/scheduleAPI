@@ -14,6 +14,7 @@ SQLITE_URI = database_file
 
 @app.route("/login", methods=["POST"])
 def check_login():
+    # Authenticates User by validating the user email with a hashed SHA256 password
     session = sc.Sqlite.get_session(url=SQLITE_URI)
     request_body = request.get_json()
 
@@ -48,6 +49,7 @@ def check_login():
 
 @app.route("/user", methods=["POST"])
 def create_user():
+    # Creates a new user object within the database
     session = sc.Sqlite.get_session(url=SQLITE_URI)
     request_body = request.get_json()
     first_name = ""
@@ -81,6 +83,7 @@ def create_user():
 
 @app.route("/user/<int:user_id>", methods=["PUT"])
 def edit_user(user_id):
+    # Edits a single user object's attributes
     session = sc.Sqlite.get_session(url=SQLITE_URI)
     request_body = request.get_json()
     first_name = ""
@@ -115,6 +118,7 @@ def edit_user(user_id):
 
 @app.route('/users', methods=["GET"])
 def get_users():
+    # Return back a list of all Users
     session = sc.Sqlite.get_session(url=SQLITE_URI)
     users_object_list = session.query(User).all()
     user_list = []
@@ -136,6 +140,7 @@ def get_users():
 
 @app.route('/user/<int:user_id>', methods=["GET"])
 def get_user(user_id):
+    # Return back a single user object
     session = sc.Sqlite.get_session(url=SQLITE_URI)
     user = session.query(User).filter(
         User.id == user_id
@@ -157,6 +162,7 @@ def get_user(user_id):
 
 @app.route('/user/<int:user_id>/shifts', methods=["GET"])
 def get_user_shifts(user_id):
+    # Returns back a list of a user's shifts in start time order
     session = sc.Sqlite.get_session(url=SQLITE_URI)
     user = session.query(User).filter(
         User.id == user_id
@@ -182,6 +188,7 @@ def get_user_shifts(user_id):
 
 @app.route('/user/<int:user_id>', methods=["DELETE"])
 def delete_user(user_id):
+    # Deletes a user object from the database
     session = sc.Sqlite.get_session(url=SQLITE_URI)
     user = session.query(User).filter(
         User.id == user_id
@@ -199,6 +206,7 @@ def delete_user(user_id):
 
 @app.route("/shift", methods=["POST"])
 def create_shift():
+    # Creates a new shift object within the database
     session = sc.Sqlite.get_session(url=SQLITE_URI)
     request_body = request.get_json()
     user_id = None
@@ -247,6 +255,7 @@ def create_shift():
 
 @app.route('/shift/<int:shift_id>', methods=["PUT"])
 def edit_shift(shift_id):
+    # Edit a new shift object's attributes within the database
     session = sc.Sqlite.get_session(url=SQLITE_URI)
     request_body = request.get_json()
     user_id = None
@@ -295,6 +304,7 @@ def edit_shift(shift_id):
 
 @app.route('/shift/<int:shift_id>', methods=["GET"])
 def get_shift(shift_id):
+    # Returns back a selected shift object
     session = sc.Sqlite.get_session(url=SQLITE_URI)
     shift = session.query(Shift).filter(
         Shift.id == shift_id
@@ -318,6 +328,7 @@ def get_shift(shift_id):
 
 @app.route('/shifts', methods=["GET"])
 def get_shifts():
+    # Returns back the full list of shift objects ordered by start time
     session = sc.Sqlite.get_session(url=SQLITE_URI)
 
     start_time = arrow.get(0).datetime
@@ -352,6 +363,7 @@ def get_shifts():
 
 @app.route('/shift/<int:shift_id>', methods=["DELETE"])
 def delete_shift(shift_id):
+    # Deletes the specified shift object from the database
     session = sc.Sqlite.get_session(url=SQLITE_URI)
     shift = session.query(Shift).filter(
         Shift.id == shift_id
