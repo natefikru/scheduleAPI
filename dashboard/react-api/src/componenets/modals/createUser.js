@@ -35,7 +35,7 @@ export default class CreateUserModal extends React.Component {
                     password : sha256(this.state.password)
 
                 }).then(() => {
-                    window.location.reload();
+                   window.location.reload();
             });
         } catch (e) {
             console.log(`error: ${e}`);
@@ -116,7 +116,7 @@ export default class CreateUserModal extends React.Component {
                             onChange={this.onChange}
                         />
                         <br/>
-                        <Button variant="primary" type="submit" onClick={this.handleSubmit}>
+                        <Button variant="primary" onClick={this.handleSubmit}>
                             Save Changes
                         </Button>
                     </Form>

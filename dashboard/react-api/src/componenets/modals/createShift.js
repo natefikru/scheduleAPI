@@ -32,7 +32,9 @@ export default class CreateShiftModal extends React.Component {
                     user_id: this.state.selectedUserId,
                     start_time: this.state.startTime,
                     end_time: this.state.endTime
-                });
+                }).then(() => {
+		   window.location.reload();
+	    });
         } catch (e) {
             console.log(`error: ${e}`);
         }
@@ -104,7 +106,7 @@ export default class CreateShiftModal extends React.Component {
                         </Row>
 
                         <br/>
-                        <Button variant="primary" type="submit" onClick={this.handleSubmit}>
+                        <Button variant="primary"  onClick={this.handleSubmit}>
                             Save Changes
                         </Button>
                     </Form>
