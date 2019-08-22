@@ -21,7 +21,6 @@ There are a few features that aren’t complete due to not having enough time. I
 4.Host the application in a secured production environment. (currently running as insecure development)
 5. Deploy application using docker for both applications to ensure fundamental steps of a seamless deployment pipeline.
 6. Within the API, create a process where, if the call is a write call, (POST, PUT, DELETE), require the userID in the header so the api can check the DB to see if the user is a manager or not. The API would restrict access based on the result (Can also make restricting access for non-managers process more secure by incorporating API keys associated with each user required to make a call.)
-7. Bug where calls from React are periodically cancelled. Must incorporate a retry and/or fix core issue
 
 
 ## Installation
