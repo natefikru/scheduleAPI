@@ -1,6 +1,8 @@
 # Schedule Application
 
-This is a schedule application built for demo purposes. The application components include a python flask API with a React UI that interacts with it. A user will be able to hit the API directly or use the UI to write and receive data.
+This is a schedule application built for demo purposes. This application provides schedule functionality that allows a user to view/create/modify/delete a user/shift. 
+
+The application components include a python flask API with a React UI that interacts with it. A user will be able to hit the API directly or use the UI to write and receive data.
 
 ## API Documentation
 [API Documentation can be found here](https://app.swaggerhub.com/apis-docs/natefikru/scheduleAPI/1.0.0)
